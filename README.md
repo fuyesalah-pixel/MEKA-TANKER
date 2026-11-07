@@ -53,9 +53,36 @@ Open http://localhost:5173 for the site and http://localhost:5173/admin for the 
 | `npm run build` | Production build into `dist/` |
 | `npm start` | Serve the built front end from Express |
 
+## Deploy to Vercel
+
+The project ships Vercel-ready: `api/index.js` exposes the Express app as one serverless function, `vercel.json` routes `/api/*` to it and everything else to the SPA, and `npm run build` copies `images/` and `favicon/` into `dist/` so the static host serves them.
+
+1. Import the GitHub repository into Vercel. The build command (`npm run build`), output directory (`dist`) and routing come from `vercel.json` — no dashboard overrides needed.
+2. Create a hosted PostgreSQL database (Vercel's Postgres/Neon integration is the shortest path; any provider works) and copy its **pooled** connection string.
+3. Add these environment variables to the project (Production and Preview):
+
+   | Variable | Value |
+   | --- | --- |
+   | `DATABASE_URL` | pooled PostgreSQL connection string (`POSTGRES_URL` is also read) |
+   | `JWT_SECRET` | long random string — the API refuses to start on Vercel without it |
+   | `ADMIN_EMAIL` | admin account email for seeding |
+   | `ADMIN_PASSWORD` | admin account password for seeding |
+
+4. Create the schema and demo data once against the hosted database:
+
+   ```bash
+   DATABASE_URL="postgres://..." ADMIN_EMAIL="..." ADMIN_PASSWORD="..." npm run db:setup
+   ```
+
+5. Deploy, then check `/api/products` returns JSON and `/admin` signs in with those credentials.
+
+The API uses a small connection pool on Vercel (`max: 3`, idle clients released) so concurrent function instances stay within a pooled connection limit. Use a pooled URL, not a direct one, if your provider offers both.
+
 ## Project structure
 
 ```
+api/             Vercel serverless entry point (wraps the Express app)
+scripts/         build helpers
 client/          React app
   src/admin/     admin dashboard (auth, products, orders, enquiries, content, settings)
   src/components/ layout, hero water backdrop, footer, shared UI

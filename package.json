@@ -10,7 +10,7 @@
     "dev:api:watch": "node --watch server/index.js",
     "dev:web": "vite",
     "db:setup": "node server/setup-db.js",
-    "build": "vite build",
+    "build": "vite build && node scripts/copy-static.js",
     "start": "node server/index.js",
     "preview": "vite preview"
   },

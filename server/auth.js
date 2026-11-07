@@ -1,5 +1,11 @@
 import jwt from 'jsonwebtoken';
 
+if (!process.env.JWT_SECRET && process.env.VERCEL) {
+  throw new Error(
+    'JWT_SECRET is not set. Add it in Vercel → Project → Settings → Environment Variables before deploying.'
+  );
+}
+
 const SECRET = process.env.JWT_SECRET || 'meka-tanker-local-dev-secret-change-me';
 
 export function signToken(admin) {
